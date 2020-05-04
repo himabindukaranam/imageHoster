@@ -1,7 +1,10 @@
-﻿package ImageHoster.controller;
+package ImageHoster.controller;
+
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,10 @@ public class ImageController {
     @Autowired
     private TagService tagService;
 
+    @Autowired(required = true)
+    private CommentService commentservice;
+
+
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
     public String getUserImages(Model model) {
@@ -47,6 +54,8 @@ public class ImageController {
     @RequestMapping("/images/{imageId}/{title}")
     public String showImage(@PathVariable("title") String title, Model model, @PathVariable("imageId") Integer imageId) {
         Image image = imageService.getImage(imageId);
+        List<Comment> commentList = commentservice.getComments(image.getId(), image.getTitle());
+        model.addAttribute("comments", commentList);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
         return "images/image";
@@ -95,6 +104,8 @@ public class ImageController {
         Image image = imageService.getImage(imageId);
         String tags = convertTagsToString(image.getTags());
         List<Tag> tag = findOrCreateTags(tags);
+        List<Comment> commentList = commentservice.getComments(image.getId(), image.getTitle());
+        model.addAttribute("comments", commentList);
         model.addAttribute("image", image);
         String error = "Only the owner of the image can edit the image";
         if (!checkUser(image.getUser(), session)) {
@@ -161,6 +172,8 @@ public class ImageController {
         Image image = imageService.getImage(imageId);
         String tags = convertTagsToString(image.getTags());
         List<Tag> tag = findOrCreateTags(tags);
+        List<Comment> commentList = commentservice.getComments(image.getId(), image.getTitle());
+        model.addAttribute("comments", commentList);
         model.addAttribute("image", image);
         model.addAttribute("tags", tag);
         if (!checkUser(image.getUser(), session)) {
